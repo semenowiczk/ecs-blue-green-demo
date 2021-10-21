@@ -2,8 +2,8 @@ version: 0.2
 
 env:
   secrets-manager:
-    DOCKER_USERNAME: "ecs-blue-green-demo-secrets-docker:username"
-    DOCKER_PASSWORD: "ecs-blue-green-demo-secrets-docker:access-token"
+    DOCKER_USERNAME: "ecs-blue-green-board-secrets-docker:username"
+    DOCKER_PASSWORD: "ecs-blue-green-board-secrets-docker:access-token"
 
 phases:
   pre_build:

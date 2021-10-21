@@ -1,13 +1,13 @@
 {
-  "family": "ecs-blue-green-demo-app",
+  "family": "ecs-blue-green-board-app",
   "requiresCompatibilities": [
     "FARGATE"
   ],
   "cpu": "512",
   "memory": "2048",
   "networkMode": "awsvpc",
-  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecs-blue-green-demo-ecs-execution",
-  "taskRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecs-blue-green-demo-ecs-task",
+  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecs-blue-green-board-ecs-execution",
+  "taskRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecs-blue-green-board-ecs-task",
   "volumes": [
     {
       "name": "uds",
@@ -17,7 +17,7 @@
   "containerDefinitions": [
     {
       "name": "nginx",
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-blue-green-demo/nginx:<IMAGE_TAG>",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-blue-green-board/nginx:<IMAGE_TAG>",
       "essential": true,
       "portMappings": [
         {
@@ -42,7 +42,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "ecs-blue-green-demo-app",
+          "awslogs-group": "ecs-blue-green-board-app",
           "awslogs-region": "<AWS_REGION>",
           "awslogs-stream-prefix": "ecs"
         }
@@ -50,7 +50,7 @@
     },
     {
       "name": "php-fpm",
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-blue-green-demo/php-fpm:<IMAGE_TAG>",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-blue-green-board/php-fpm:<IMAGE_TAG>",
       "essential": true,
       "ulimits": [
         {
@@ -73,7 +73,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "ecs-blue-green-demo-app",
+          "awslogs-group": "ecs-blue-green-board-app",
           "awslogs-region": "<AWS_REGION>",
           "awslogs-stream-prefix": "ecs"
         }

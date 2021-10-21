@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   StackFamily:
     Type: String
-    Default: ecs-blue-green-demo
+    Default: ecs-blue-green-board
 
 Resources:
   PrivateRouteTable1a:
@@ -34,33 +34,33 @@ Resources:
     DependsOn:
       - PrivateRouteTable1a
 
-  PrivateRouteTable1d:
+  PrivateRouteTable1b:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId:
         Fn::ImportValue:
           !Sub "${StackFamily}-vpc"
 
-  PriavteRoute1d:
+  PriavteRoute1b:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref PrivateRouteTable1d
+      RouteTableId: !Ref PrivateRouteTable1b
       DestinationCidrBlock: 0.0.0.0/0
       InstanceId:
         Fn::ImportValue:
-          !Sub "${StackFamily}-nat-instance-1d"
+          !Sub "${StackFamily}-nat-instance-1b"
     DependsOn:
-      - PrivateRouteTable1d
+      - PrivateRouteTable1b
 
-  PrivetSubnetRouteTableAssociatio1d:
+  PrivetSubnetRouteTableAssociatio1b:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Fn::ImportValue:
-          !Sub "${StackFamily}-private-subnet-1d"
-      RouteTableId: !Ref PrivateRouteTable1d
+          !Sub "${StackFamily}-private-subnet-1b"
+      RouteTableId: !Ref PrivateRouteTable1b
     DependsOn:
-      - PrivateRouteTable1d
+      - PrivateRouteTable1b
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -108,12 +108,12 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
     DependsOn: PublicRouteTable
 
-  PublicSubnetRouteTableAssociatio1d:
+  PublicSubnetRouteTableAssociatio1b:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Fn::ImportValue:
-          !Sub "${StackFamily}-public-subnet-1d"
+          !Sub "${StackFamily}-public-subnet-1b"
       RouteTableId: !Ref PublicRouteTable
     DependsOn: PublicRouteTable
 
@@ -155,12 +155,12 @@ Resources:
       NetworkAclId: !Ref NetworkAcl
     DependsOn: NetworkAcl
 
-  PrivateSubnetNetworkAclAssociatio1d:
+  PrivateSubnetNetworkAclAssociatio1b:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
       SubnetId:
         Fn::ImportValue:
-          !Sub "${StackFamily}-private-subnet-1d"
+          !Sub "${StackFamily}-private-subnet-1b"
       NetworkAclId: !Ref NetworkAcl
     DependsOn: NetworkAcl
 
@@ -173,11 +173,11 @@ Resources:
       NetworkAclId: !Ref NetworkAcl
     DependsOn: NetworkAcl
 
-  PublicSubnetNetworkAclAssociatio1d:
+  PublicSubnetNetworkAclAssociatio1b:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
       SubnetId:
         Fn::ImportValue:
-          !Sub "${StackFamily}-public-subnet-1d"
+          !Sub "${StackFamily}-public-subnet-1b"
       NetworkAclId: !Ref NetworkAcl
     DependsOn: NetworkAcl

@@ -3,20 +3,20 @@ AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   StackFamily:
     Type: String
-    Default: ecs-blue-green-demo
+    Default: ecs-blue-green-board
   VpcCidrBlock:
     Type: String
     Default: 10.0.0.0/16
   SubnetCidrBlockPrivate1a:
     Type: String
     Default: 10.0.1.0/24
-  SubnetCidrBlockPrivate1d:
+  SubnetCidrBlockPrivate1b:
     Type: String
     Default: 10.0.2.0/24
   SubnetCidrBlockPublic1a:
     Type: String
     Default: 10.0.3.0/24
-  SubnetCidrBlockPublic1d:
+  SubnetCidrBlockPublic1b:
     Type: String
     Default: 10.0.4.0/24
 
@@ -35,45 +35,45 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref Vpc
-      AvailabilityZone: 'ap-northeast-1a'
+      AvailabilityZone: 'eu-central-1a'
       CidrBlock: !Ref SubnetCidrBlockPrivate1a
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
           Value: !Sub "${StackFamily}-private-subnet-1a"
 
-  PrivateSubnet1d:
+  PrivateSubnet1b:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref Vpc
-      AvailabilityZone: 'ap-northeast-1d'
-      CidrBlock: !Ref SubnetCidrBlockPrivate1d
+      AvailabilityZone: 'eu-central-1b'
+      CidrBlock: !Ref SubnetCidrBlockPrivate1b
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub "${StackFamily}-private-subnet-1d"
+          Value: !Sub "${StackFamily}-private-subnet-1b"
 
   PublicSubnet1a:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref Vpc
-      AvailabilityZone: 'ap-northeast-1a'
+      AvailabilityZone: 'eu-central-1a'
       CidrBlock: !Ref SubnetCidrBlockPublic1a
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
           Value: !Sub "${StackFamily}-public-subnet-1a"
 
-  PublicSubnet1d:
+  PublicSubnet1b:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref Vpc
-      AvailabilityZone: 'ap-northeast-1d'
-      CidrBlock: !Ref SubnetCidrBlockPublic1d
+      AvailabilityZone: 'eu-central-1b'
+      CidrBlock: !Ref SubnetCidrBlockPublic1b
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub "${StackFamily}-public-subnet-1d"
+          Value: !Sub "${StackFamily}-public-subnet-1b"
 
 Outputs:
   VPC:
@@ -84,31 +84,31 @@ Outputs:
     Value: !Ref PrivateSubnet1a
     Export:
       Name: !Sub "${StackFamily}-private-subnet-1a"
-  PrivateSubnet1d:
-    Value: !Ref PrivateSubnet1d
+  PrivateSubnet1b:
+    Value: !Ref PrivateSubnet1b
     Export:
-      Name: !Sub "${StackFamily}-private-subnet-1d"
+      Name: !Sub "${StackFamily}-private-subnet-1b"
   PublicSubnet1a:
     Value: !Ref PublicSubnet1a
     Export:
       Name: !Sub "${StackFamily}-public-subnet-1a"
-  PublicSubnet1d:
-    Value: !Ref PublicSubnet1d
+  PublicSubnet1b:
+    Value: !Ref PublicSubnet1b
     Export:
-      Name: !Sub "${StackFamily}-public-subnet-1d"
+      Name: !Sub "${StackFamily}-public-subnet-1b"
   SubnetCidrBlockPrivate1a:
     Value: !Ref SubnetCidrBlockPrivate1a
     Export:
       Name: !Sub "${StackFamily}-cidr-private-1a"
-  SubnetCidrBlockPrivate1d:
-    Value: !Ref SubnetCidrBlockPrivate1d
+  SubnetCidrBlockPrivate1b:
+    Value: !Ref SubnetCidrBlockPrivate1b
     Export:
-      Name: !Sub "${StackFamily}-cidr-private-1d"
+      Name: !Sub "${StackFamily}-cidr-private-1b"
   SubnetCidrBlockPublic1a:
     Value: !Ref SubnetCidrBlockPublic1a
     Export:
       Name: !Sub "${StackFamily}-cidr-public-1a"
-  SubnetCidrBlockPublic1d:
-    Value: !Ref SubnetCidrBlockPublic1d
+  SubnetCidrBlockPublic1b:
+    Value: !Ref SubnetCidrBlockPublic1b
     Export:
-      Name: !Sub "${StackFamily}-cidr-public-1d"
+      Name: !Sub "${StackFamily}-cidr-public-1b"

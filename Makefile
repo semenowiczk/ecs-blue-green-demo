@@ -1,5 +1,5 @@
-stack-family=ecs-blue-green-demo
-github-owner=imunew
+stack-family=ecs-blue-green-board
+github-owner=semenowiczk
 
 deploy-vpc-subnet:
 	aws --profile $(profile) cloudformation deploy \
@@ -69,12 +69,25 @@ push-docker-images: cache-account-id cache-region
 	$(eval account-id := $(shell cat .cache/account-id.txt))
 	$(eval region := $(shell cat .cache/region.txt))
 	aws --profile $(profile) ecr get-login-password --region $(region) | docker login --username AWS --password-stdin $(account-id).dkr.ecr.$(region).amazonaws.com
-	docker build -t $(stack-family)/php-fpm -f aws/ecs/app-service/php-fpm/Dockerfile .
+	docker build --platform=linux/amd64 -t $(stack-family)/php-fpm -f aws/ecs/app-service/php-fpm/Dockerfile .
 	docker tag $(stack-family)/php-fpm:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/php-fpm:latest
 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/php-fpm:latest
-	docker build -t $(stack-family)/nginx -f aws/ecs/app-service/nginx/Dockerfile .
+	docker build --platform=linux/amd64 -t $(stack-family)/nginx -f aws/ecs/app-service/nginx/Dockerfile .
 	docker tag $(stack-family)/nginx:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/nginx:latest
 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/nginx:latest
+	# ----------
+# 	docker build --platform=linux/amd64 -t $(stack-family)/janus-gateway-us -f janus/Dockerfile .
+# 	docker tag $(stack-family)/janus-gateway-us:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/janus-gateway-us:latest
+# 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/janus-gateway-us:latest
+# 	docker build --platform=linux/amd64 -t $(stack-family)/sharetheboard-api -f api/Dockerfile .
+# 	docker tag $(stack-family)/sharetheboard-api:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-api:latest
+# 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-api:latest
+# 	docker build --platform=linux/amd64 -t $(stack-family)/sharetheboard-worker -f worker/Dockerfile .
+# 	docker tag $(stack-family)/sharetheboard-worker:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-worker:latest
+# 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-worker:latest
+# 	docker build --platform=linux/amd64 -t $(stack-family)/sharetheboard-client -f client/Dockerfile .
+# 	docker tag $(stack-family)/sharetheboard-client:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-client:latest
+# 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-client:latest
 
 deploy-secrets-github:
 	aws --profile $(profile) cloudformation deploy \

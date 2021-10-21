@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   StackFamily:
     Type: String
-    Default: ecs-blue-green-demo
+    Default: ecs-blue-green-board
   EcsDesiredCount:
     Type: Number
     Default: 1
@@ -130,7 +130,7 @@ Resources:
             - Fn::ImportValue:
                 !Sub "${StackFamily}-private-subnet-1a"
             - Fn::ImportValue:
-                !Sub "${StackFamily}-private-subnet-1d"
+                !Sub "${StackFamily}-private-subnet-1b"
           SecurityGroups:
             - Fn::ImportValue:
                 !Sub "${StackFamily}-app-sg"

@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   StackFamily:
     Type: String
-    Default: ecs-blue-green-demo
+    Default: ecs-blue-green-board
 
 Resources:
   TargetGroupBlue:
@@ -41,7 +41,7 @@ Resources:
         - Fn::ImportValue:
             !Sub "${StackFamily}-public-subnet-1a"
         - Fn::ImportValue:
-            !Sub "${StackFamily}-public-subnet-1d"
+            !Sub "${StackFamily}-public-subnet-1b"
 
   ListenerHTTP:
     Type: AWS::ElasticLoadBalancingV2::Listener

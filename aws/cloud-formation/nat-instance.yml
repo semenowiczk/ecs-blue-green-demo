@@ -3,19 +3,19 @@ AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   StackFamily:
     Type: String
-    Default: ecs-blue-green-demo
+    Default: ecs-blue-green-board
   NatInstanceAmiId:
     Type: AWS::EC2::Image::Id
-    Default: ami-00d29e4cb217ae06b
+    Default: ami-001b36cbc16911c13
   NatInstanceInstanceType:
     Type: String
     Default: t3a.nano
   AvailabilityZone1a:
     Type: String
-    Default: ap-northeast-1a
-  AvailabilityZone1d:
+    Default: eu-central-1a
+  AvailabilityZone1b:
     Type: String
-    Default: ap-northeast-1d
+    Default: eu-central-1b
 
 Resources:
   NatSecurityGroup:
@@ -33,7 +33,7 @@ Resources:
           ToPort: 80
         - CidrIp:
             Fn::ImportValue:
-              !Sub "${StackFamily}-cidr-private-1d"
+              !Sub "${StackFamily}-cidr-private-1b"
           Description: HTTP
           FromPort: 80
           IpProtocol: tcp
@@ -47,7 +47,7 @@ Resources:
           ToPort: 443
         - CidrIp:
             Fn::ImportValue:
-              !Sub "${StackFamily}-cidr-private-1d"
+              !Sub "${StackFamily}-cidr-private-1b"
           Description: HTTPS
           FromPort: 443
           IpProtocol: tcp
@@ -61,7 +61,7 @@ Resources:
           ToPort: 587
         - CidrIp:
             Fn::ImportValue:
-              !Sub "${StackFamily}-cidr-private-1d"
+              !Sub "${StackFamily}-cidr-private-1b"
           Description: SMTP
           FromPort: 587
           IpProtocol: tcp
@@ -135,10 +135,10 @@ Resources:
         - Key: Group
           Value: NAT
 
-  NatInstance1d:
+  NatInstance1b:
     Type: AWS::EC2::Instance
     Properties:
-      AvailabilityZone: !Ref AvailabilityZone1d
+      AvailabilityZone: !Ref AvailabilityZone1b
       IamInstanceProfile: !Ref NatInstanceProfile
       ImageId: !Ref NatInstanceAmiId
       InstanceType: !Ref NatInstanceInstanceType
@@ -149,11 +149,11 @@ Resources:
             - !Ref NatSecurityGroup
           SubnetId:
             Fn::ImportValue:
-              !Sub "${StackFamily}-public-subnet-1d"
+              !Sub "${StackFamily}-public-subnet-1b"
       SourceDestCheck: false
       Tags:
         - Key: Name
-          Value: nat-instance-1d
+          Value: nat-instance-1b
         - Key: Group
           Value: NAT
 
@@ -162,7 +162,7 @@ Outputs:
     Value: !Ref NatInstance1a
     Export:
       Name: !Sub "${StackFamily}-nat-instance-1a"
-  NatInstance1d:
-    Value: !Ref NatInstance1d
+  NatInstance1b:
+    Value: !Ref NatInstance1b
     Export:
-      Name: !Sub "${StackFamily}-nat-instance-1d"
+      Name: !Sub "${StackFamily}-nat-instance-1b"

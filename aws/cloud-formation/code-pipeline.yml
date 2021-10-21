@@ -3,10 +3,10 @@ AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   StackFamily:
     Type: String
-    Default: ecs-blue-green-demo
+    Default: ecs-blue-green-board
   GitHubOwner:
     Type: String
-    Default: imunew
+    Default: semenowiczk
   GitHubRepository:
     Type: String
     Default: ecs-blue-green-demo

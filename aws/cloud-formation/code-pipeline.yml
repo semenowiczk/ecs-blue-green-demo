@@ -233,7 +233,7 @@ Resources:
                 Version: '1'
                 Provider: CodeDeployToECS
               Configuration:
-                ApplicationName: !Sub "${StackFamily}-app"
+                ApplicationName: !Sub "${StackFamily}-test-app"
                 DeploymentGroupName: !Sub "${StackFamily}-dg"
                 TaskDefinitionTemplateArtifact: BuildArtifact
                 TaskDefinitionTemplatePath: taskdef.json

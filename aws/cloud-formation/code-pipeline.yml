@@ -207,6 +207,7 @@ Resources:
                 OAuthToken: !Sub "{{resolve:secretsmanager:${StackFamily}-secrets-github:SecretString:access-token}}"
               OutputArtifacts:
                 - Name: SourceArtifact
+              RunOrder: 1
         - Name: Build
           Actions:
             - Name: Build
@@ -222,6 +223,7 @@ Resources:
               OutputArtifacts:
                 - Name: BuildArtifact
               Region: eu-central-1
+              RunOrder: 2
         - Name: DeployAPI
           Actions:
             - Name: Deploy
@@ -239,8 +241,7 @@ Resources:
                 TaskDefinitionTemplatePath: apitaskdef.json 
                 AppSpecTemplateArtifact: BuildArtifact
                 AppSpecTemplatePath: appspecAPI.yml
-        - Name: DeployCient
-          Actions:
+              RunOrder: 3
             - Name: Deploy
               InputArtifacts:
                 - Name: BuildArtifact
@@ -256,6 +257,8 @@ Resources:
                 TaskDefinitionTemplatePath: clienttaskdef.json
                 AppSpecTemplateArtifact: BuildArtifact
                 AppSpecTemplatePath: appspecClient.yml
+              RunOrder: 4
+
       ArtifactStore:
         Type: S3
         Location: !Ref PilelineArtifactStore

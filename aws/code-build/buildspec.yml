@@ -13,22 +13,16 @@ phases:
       - aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
       - echo Logging in to Docker Hub...
       - echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
-      - IMAGE_NAME_PHP_FPM=php-fpm
-      - REPOSITORY_URI_PHP_FPM=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${PROJECT_NAMESPACE}/${IMAGE_NAME_PHP_FPM}
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t ${REPOSITORY_URI_PHP_FPM}:latest -f aws/ecs/app-service/php-fpm/Dockerfile .
-      - docker tag ${REPOSITORY_URI_PHP_FPM}:latest ${REPOSITORY_URI_PHP_FPM}:$IMAGE_TAG
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
-      - docker push ${REPOSITORY_URI_PHP_FPM}:latest
-      - docker push ${REPOSITORY_URI_PHP_FPM}:$IMAGE_TAG
       - echo Writing image definitions file...
       - cp aws/code-deploy/appspecAPI.yml appspecAPI.yml
       - cp aws/code-deploy/appspecClient.yml appspecClient.yml

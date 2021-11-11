@@ -74,12 +74,6 @@
       "memory": 1536,
       "volumesFrom": [],
       "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/sharetheboard-client:latest",
-      "dependsOn": [
-        {
-          "containerName": "sharetheboard-api",
-          "condition": "HEALTHY"
-        }
-      ],
       "healthCheck": {
         "retries": 3,
         "command": [

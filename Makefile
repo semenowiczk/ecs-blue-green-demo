@@ -94,13 +94,13 @@ deploy-secrets-docker:
 		--no-fail-on-empty-changeset
 
 deploy-code-deploy:
-# 	aws --profile $(profile) cloudformation deploy \
-# 		--template ./aws/cloud-formation/code-deploy.yml \
-# 		--stack-name $(stack-family)-$(StackFamilyEnvironment)-code-deploy \
-# 		--parameter-overrides StackFamily=$(stack-family) \
-# 		--capabilities CAPABILITY_NAMED_IAM \
-# 		--no-fail-on-empty-changeset
-# 	make deploy-code-deploy-app profile=$(profile)
+	aws --profile $(profile) cloudformation deploy \
+		--template ./aws/cloud-formation/code-deploy.yml \
+		--stack-name $(stack-family)-$(StackFamilyEnvironment)-code-deploy \
+		--parameter-overrides StackFamily=$(stack-family) \
+		--capabilities CAPABILITY_NAMED_IAM \
+		--no-fail-on-empty-changeset
+	make deploy-code-deploy-app profile=$(profile)
 	make deploy-code-deploy-group profile=$(profile)
 
 deploy-code-deploy-app:

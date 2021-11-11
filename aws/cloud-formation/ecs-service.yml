@@ -45,7 +45,7 @@ Resources:
       Path: "/"
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
-      RoleName: !Sub "${StackFamily}-ecs-execution"
+      RoleName: !Sub "${StackFamily}-test-ecs-execution"
 
   TaskRole:
     Type: AWS::IAM::Role
@@ -60,7 +60,7 @@ Resources:
             Action:
               - "sts:AssumeRole"
       Path: "/"
-      RoleName: !Sub "${StackFamily}-ecs-task"
+      RoleName: !Sub "${StackFamily}-test-ecs-task"
 
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition

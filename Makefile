@@ -1,5 +1,6 @@
-stack-family=ecs-blue-green-board
+stack-family=ecs-board
 github-owner=semenowiczk
+StackFamilyEnvironment=test
 
 deploy-vpc-subnet:
 	aws --profile $(profile) cloudformation deploy \
@@ -36,7 +37,7 @@ deploy-security-group:
 deploy-load-balancer:
 	aws --profile $(profile) cloudformation deploy \
 		--template ./aws/cloud-formation/load-balancer.yml \
-		--stack-name $(stack-family)-load-balancer \
+		--stack-name $(stack-family)-$(StackFamilyEnvironment)-load-balancer \
 		--parameter-overrides StackFamily=$(stack-family) \
 		--capabilities CAPABILITY_IAM \
 		--no-fail-on-empty-changeset
@@ -44,7 +45,7 @@ deploy-load-balancer:
 deploy-ecs-cluster:
 	aws --profile $(profile) cloudformation deploy \
 		--template ./aws/cloud-formation/ecs-cluster.yml \
-		--stack-name $(stack-family)-ecs-cluster \
+		--stack-name $(stack-family)-$(StackFamilyEnvironment)-ecs-cluster \
 		--parameter-overrides StackFamily=$(stack-family) \
 		--capabilities CAPABILITY_IAM \
 		--no-fail-on-empty-changeset
@@ -52,7 +53,7 @@ deploy-ecs-cluster:
 deploy-ecs-ecr:
 	aws --profile $(profile) cloudformation deploy \
 		--template ./aws/cloud-formation/ecs-ecr.yml \
-		--stack-name $(stack-family)-ecs-ecr \
+		--stack-name $(stack-family)-$(StackFamilyEnvironment)-ecs-ecr \
 		--parameter-overrides StackFamily=$(stack-family) \
 		--capabilities CAPABILITY_IAM \
 		--no-fail-on-empty-changeset
@@ -60,7 +61,7 @@ deploy-ecs-ecr:
 deploy-ecs-service:
 	aws --profile $(profile) cloudformation deploy \
 		--template ./aws/cloud-formation/ecs-service.yml \
-		--stack-name $(stack-family)-ecs-service \
+		--stack-name $(stack-family)-$(StackFamilyEnvironment)-ecs-service \
 		--parameter-overrides StackFamily=$(stack-family) \
 		--capabilities CAPABILITY_NAMED_IAM \
 		--no-fail-on-empty-changeset
@@ -75,24 +76,11 @@ push-docker-images: cache-account-id cache-region
 	docker build --platform=linux/amd64 -t $(stack-family)/nginx -f aws/ecs/app-service/nginx/Dockerfile .
 	docker tag $(stack-family)/nginx:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/nginx:latest
 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/nginx:latest
-	# ----------
-# 	docker build --platform=linux/amd64 -t $(stack-family)/janus-gateway-us -f janus/Dockerfile .
-# 	docker tag $(stack-family)/janus-gateway-us:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/janus-gateway-us:latest
-# 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/janus-gateway-us:latest
-# 	docker build --platform=linux/amd64 -t $(stack-family)/sharetheboard-api -f api/Dockerfile .
-# 	docker tag $(stack-family)/sharetheboard-api:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-api:latest
-# 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-api:latest
-# 	docker build --platform=linux/amd64 -t $(stack-family)/sharetheboard-worker -f worker/Dockerfile .
-# 	docker tag $(stack-family)/sharetheboard-worker:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-worker:latest
-# 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-worker:latest
-# 	docker build --platform=linux/amd64 -t $(stack-family)/sharetheboard-client -f client/Dockerfile .
-# 	docker tag $(stack-family)/sharetheboard-client:latest $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-client:latest
-# 	docker push $(account-id).dkr.ecr.$(region).amazonaws.com/$(stack-family)/sharetheboard-client:latest
 
 deploy-secrets-github:
 	aws --profile $(profile) cloudformation deploy \
 		--template ./aws/cloud-formation/secrets-github.yml \
-		--stack-name $(stack-family)-secrets-github \
+		--stack-name $(stack-family)-$(StackFamilyEnvironment)-secrets-github \
 		--parameter-overrides StackFamily=$(stack-family) AccessToken=$(access-token) \
 		--capabilities CAPABILITY_IAM \
 		--no-fail-on-empty-changeset
@@ -100,24 +88,24 @@ deploy-secrets-github:
 deploy-secrets-docker:
 	aws --profile $(profile) cloudformation deploy \
 		--template ./aws/cloud-formation/secrets-docker.yml \
-		--stack-name $(stack-family)-secrets-docker \
+		--stack-name $(stack-family)-$(StackFamilyEnvironment)-secrets-docker \
 		--parameter-overrides StackFamily=$(stack-family) Username=$(username) AccessToken=$(access-token) \
 		--capabilities CAPABILITY_IAM \
 		--no-fail-on-empty-changeset
 
 deploy-code-deploy:
-	aws --profile $(profile) cloudformation deploy \
-		--template ./aws/cloud-formation/code-deploy.yml \
-		--stack-name $(stack-family)-code-deploy \
-		--parameter-overrides StackFamily=$(stack-family) \
-		--capabilities CAPABILITY_NAMED_IAM \
-		--no-fail-on-empty-changeset
-	make deploy-code-deploy-app profile=$(profile)
+# 	aws --profile $(profile) cloudformation deploy \
+# 		--template ./aws/cloud-formation/code-deploy.yml \
+# 		--stack-name $(stack-family)-$(StackFamilyEnvironment)-code-deploy \
+# 		--parameter-overrides StackFamily=$(stack-family) \
+# 		--capabilities CAPABILITY_NAMED_IAM \
+# 		--no-fail-on-empty-changeset
+# 	make deploy-code-deploy-app profile=$(profile)
 	make deploy-code-deploy-group profile=$(profile)
 
 deploy-code-deploy-app:
 	aws --profile $(profile) deploy create-application \
-		--application-name $(stack-family)-app \
+		--application-name $(stack-family)-$(StackFamilyEnvironment)-app \
 		--compute-platform ECS
 
 deploy-code-deploy-group: cache-listener-arn cache-deploy-role-arn
@@ -132,7 +120,7 @@ deploy-code-deploy-group: cache-listener-arn cache-deploy-role-arn
 deploy-code-pipeline:
 	aws --profile $(profile) cloudformation deploy \
 		--template ./aws/cloud-formation/code-pipeline.yml \
-		--stack-name $(stack-family)-code-pipeline \
+		--stack-name $(stack-family)-$(StackFamilyEnvironment)-code-pipeline \
 		--parameter-overrides StackFamily=$(stack-family) GitHubOwner=$(github-owner) \
 		--capabilities CAPABILITY_NAMED_IAM \
 		--no-fail-on-empty-changeset
@@ -151,13 +139,13 @@ cache-region:
 cache-listener-arn:
 	mkdir -p .cache
 	aws --profile=$(profile) cloudformation describe-stack-resource \
-		--stack-name=$(stack-family)-load-balancer \
+		--stack-name=$(stack-family)-$(StackFamilyEnvironment)-load-balancer \
 		--logical-resource-id=ListenerHTTP \
 		--query 'StackResourceDetail.PhysicalResourceId' | tr -d '"' > .cache/listener-arn.txt
 
 cache-deploy-role-name:
 	aws --profile=$(profile) cloudformation describe-stack-resource \
-		--stack-name=$(stack-family)-code-deploy \
+		--stack-name=$(stack-family)-$(StackFamilyEnvironment)-code-deploy \
 		--logical-resource-id=DeployRole \
 		--query 'StackResourceDetail.PhysicalResourceId' | tr -d '"' > .cache/deploy-role-name.txt
 

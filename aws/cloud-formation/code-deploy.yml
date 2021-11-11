@@ -26,4 +26,4 @@ Outputs:
   DeployRole:
     Value: !Ref DeployRole
     Export:
-      Name: !Sub "${StackFamily}-deploy-role"
+      Name: !Sub "${StackFamily}-test-deploy-role"

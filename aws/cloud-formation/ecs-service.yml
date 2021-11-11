@@ -300,16 +300,11 @@ Resources:
           TargetGroupArn:
             Fn::ImportValue:
               !Sub "${StackFamily}-target-group-blue"
-        # - ContainerName: sharetheboard-client
-        #   ContainerPort: 80
-        #   TargetGroupArn:
-        #     Fn::ImportValue:
-        #       !Sub "${StackFamily}-target-group-blue-app"
-        # - ContainerName: sharetheboard-api
-        #   ContainerPort: 8000
-        #   TargetGroupArn:
-        #     Fn::ImportValue:
-        #       !Sub "${StackFamily}-target-group-blue-api"
+        - ContainerName: sharetheboard-api
+          ContainerPort: 8000
+          TargetGroupArn:
+            Fn::ImportValue:
+              !Sub "${StackFamily}-target-group-blue-api"
       HealthCheckGracePeriodSeconds: 30
       ServiceName: !Sub "${StackFamily}-app"
       DeploymentController:

@@ -304,7 +304,7 @@
       "dockerSecurityOptions": [],
       "memory": 1536,
       "volumesFrom": [],
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/sharetheboard-client:<IMAGE_TAG>",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/sharetheboard-client:latest",
       "dependsOn": [
         {
           "containerName": "sharetheboard-api",
@@ -328,7 +328,7 @@
     },
     {
       "name": "php-fpm",
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/php-fpm:<IMAGE_TAG>",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/php-fpm:latest",
       "essential": true,
       "ulimits": [
         {

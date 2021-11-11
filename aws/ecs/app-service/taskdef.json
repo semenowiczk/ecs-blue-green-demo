@@ -325,37 +325,6 @@
       "dockerLabels": {},
       "systemControls": [],
       "name": "sharetheboard-client"
-    },
-    {
-      "name": "php-fpm",
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/php-fpm:latest",
-      "essential": true,
-      "ulimits": [
-        {
-          "name": "nofile",
-          "softLimit": 65536,
-          "hardLimit": 65536
-        }
-      ],
-      "memory": 2048,
-      "mountPoints": [
-        {
-          "sourceVolume": "uds",
-          "containerPath": "/var/run"
-        }
-      ],
-      "environment": [
-      ],
-      "secrets": [
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "ecs-board-app",
-          "awslogs-region": "<AWS_REGION>",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
     }
   ]
 }

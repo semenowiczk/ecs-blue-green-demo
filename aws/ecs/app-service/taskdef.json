@@ -49,15 +49,28 @@
       }
     },
     {
-      "name": "nginx2",
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/nginx:<IMAGE_TAG>",
-      "essential": true,
+      "dnsSearchDomains": [],
+      "environmentFiles": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "secretOptions": [],
+        "options": {
+          "awslogs-group": "ecs-board-staging",
+          "awslogs-region": "<AWS_REGION>",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": [],
       "portMappings": [
         {
+          "hostPort": 8000,
           "protocol": "tcp",
-          "containerPort": 443
+          "containerPort": 8000
         }
       ],
+      "command": [],
+      "cpu": 0,
+      "environment": [],
       "ulimits": [
         {
           "name": "nofile",
@@ -65,21 +78,201 @@
           "hardLimit": 65536
         }
       ],
-      "memory": 1024,
+      "dnsServers": [],
       "mountPoints": [
         {
-          "sourceVolume": "uds",
-          "containerPath": "/var/run"
+          "containerPath": "/var/run",
+          "sourceVolume": "uds"
         }
       ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "ecs-board-app",
-          "awslogs-region": "<AWS_REGION>",
-          "awslogs-stream-prefix": "ecs"
+      "secrets": [
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/NODE_ENV",
+          "name": "NODE_ENV"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_PORT",
+          "name": "APP_PORT"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_HOST",
+          "name": "APP_HOST"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_LOGGER_LEVEL",
+          "name": "APP_LOGGER_LEVEL"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_URL",
+          "name": "APP_URL"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_DATABASE_SECRET_URL",
+          "name": "APP_DATABASE_SECRET_URL"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_DATABASE_LOGGER_LEVEL",
+          "name": "APP_DATABASE_LOGGER_LEVEL"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SESSION_DOMAIN",
+          "name": "APP_SESSION_DOMAIN"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SESSION_SECRET",
+          "name": "APP_SESSION_SECRET"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_DATABASE_MIGRATIONS_AUTORUN",
+          "name": "APP_DATABASE_MIGRATIONS_AUTORUN"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SESSION_TIMEOUT",
+          "name": "APP_SESSION_TIMEOUT"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SESSION_REFRESH_SECRET",
+          "name": "APP_SESSION_REFRESH_SECRET"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SESSION_REFRESH_TIMEOUT",
+          "name": "APP_SESSION_REFRESH_TIMEOUT"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_WHITELIST_DOMAINS",
+          "name": "APP_WHITELIST_DOMAINS"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_FACEBOOK_APP_ID",
+          "name": "APP_FACEBOOK_APP_ID"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_FACEBOOK_APP_SECRET",
+          "name": "APP_FACEBOOK_APP_SECRET"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_GOOGLE_CLIENT_ID",
+          "name": "APP_GOOGLE_CLIENT_ID"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_GOOGLE_SECRET",
+          "name": "APP_GOOGLE_SECRET"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SMTP_MAIL_SENDER",
+          "name": "APP_SMTP_MAIL_SENDER"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SMTP_API_HOST",
+          "name": "APP_SMTP_API_HOST"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SMTP_API_PORT",
+          "name": "APP_SMTP_API_PORT"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SMTP_API_CLIENT",
+          "name": "APP_SMTP_API_CLIENT"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SMTP_API_SECRET",
+          "name": "APP_SMTP_API_SECRET"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_RABBITMQ_URI",
+          "name": "APP_RABBITMQ_URI"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_CLIENT_PLAN_ACCESS_KEY_ID",
+          "name": "APP_CLIENT_PLAN_ACCESS_KEY_ID"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_CLIENT_PLAN_SECRET_ACCESS_KEY_ID",
+          "name": "APP_CLIENT_PLAN_SECRET_ACCESS_KEY_ID"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SESSION_PASSWORD_RESET_SECRET",
+          "name": "APP_SESSION_PASSWORD_RESET_SECRET"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SESSION_PASSWORD_RESTET_TIMEOUT",
+          "name": "APP_SESSION_PASSWORD_RESTET_TIMEOUT"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SESSION_VERIFICATION_SECRET",
+          "name": "APP_SESSION_VERIFICATION_SECRET"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_SESSION_VERIFICATION_TIMEOUT",
+          "name": "APP_SESSION_VERIFICATION_TIMEOUT"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_FEATURE_FLAG_JWT_WS_GUARD",
+          "name": "APP_FEATURE_FLAG_JWT_WS_GUARD"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_REDIS_URL",
+          "name": "APP_REDIS_URL"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_HASHIDS_SALT",
+          "name": "APP_HASHIDS_SALT"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_HASHIDS_MIN_LENGTH",
+          "name": "APP_HASHIDS_MIN_LENGTH"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_WS_SESSION_SECRET",
+          "name": "APP_WS_SESSION_SECRET"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_WS_SESSION_SAVE_UNINITIALIZED",
+          "name": "APP_WS_SESSION_SAVE_UNINITIALIZED"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_WS_SESSION_RESAVE",
+          "name": "APP_WS_SESSION_RESAVE"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_WS_SESSION_COOKIE_SECURE",
+          "name": "APP_WS_SESSION_COOKIE_SECURE"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_WS_SESSION_COOKIE_HTTP_ONLY",
+          "name": "APP_WS_SESSION_COOKIE_HTTP_ONLY"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_WS_SESSION_COOKIE_SAME_SITE",
+          "name": "APP_WS_SESSION_COOKIE_SAME_SITE"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_WS_SESSION_COOKIE_MAX_AGE",
+          "name": "APP_WS_SESSION_COOKIE_MAX_AGE"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/APP_WS_SESSION_COOKIE_DOMAIN",
+          "name": "APP_WS_SESSION_COOKIE_DOMAIN"
         }
-      }
+      ],
+      "dockerSecurityOptions": [],
+      "memory": 1536,
+      "volumesFrom": [],
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/sharetheboard-api:latest",
+      "healthCheck": {
+        "retries": 3,
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8000/api/healthcheck"
+        ],
+        "timeout": 30,
+        "interval": 30
+      },
+      "links": [],
+      "extraHosts": [],
+      "dockerLabels": {},
+      "systemControls": [],
+      "name": "sharetheboard-api"
     },
     {
       "name": "php-fpm",

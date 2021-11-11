@@ -100,22 +100,38 @@ deploy-code-deploy:
 		--parameter-overrides StackFamily=$(stack-family) \
 		--capabilities CAPABILITY_NAMED_IAM \
 		--no-fail-on-empty-changeset
-	make deploy-code-deploy-app profile=$(profile)
-	make deploy-code-deploy-group profile=$(profile)
+	make deploy-code-deploy-api profile=$(profile)
+	make deploy-code-deploy-client profile=$(profile)
+	make deploy-code-deploy-groupAPI profile=$(profile)
+	make deploy-code-deploy-groupHTTP profile=$(profile)
 
-deploy-code-deploy-app:
+deploy-code-deploy-api:
 	aws --profile $(profile) deploy create-application \
-		--application-name $(stack-family)-$(StackFamilyEnvironment)-app \
+		--application-name $(stack-family)-api \
 		--compute-platform ECS
 
-deploy-code-deploy-group: cache-listener-arn cache-deploy-role-arn
-	$(eval listener-arn := $(shell cat .cache/listener-arn.txt))
+deploy-code-deploy-client:
+	aws --profile $(profile) deploy create-application \
+		--application-name $(stack-family)-client \
+		--compute-platform ECS
+
+deploy-code-deploy-groupAPI: cache-listenerAPI-arn cache-deploy-role-arn
+	$(eval listener-arn := $(shell cat .cache/listenerAPI-arn.txt))
 	$(eval deploy-role-arn := $(shell cat .cache/deploy-role-arn.txt))
-	cat aws/cloud-formation/code-deploy-group.json | \
+	cat aws/cloud-formation/api-code-deploy-group.json | \
 		sed -e "s!<LISTENER_ARN>!$(listener-arn)!g" -e "s!<DEPLOY_ROLE_ARN>!$(deploy-role-arn)!g" \
-		> .cache/code-deploy-group.json
+		> .cache/api-code-deploy-group.json
 	aws --profile $(profile) deploy create-deployment-group \
-		--cli-input-json file://.cache/code-deploy-group.json
+		--cli-input-json file://.cache/api-code-deploy-group.json
+
+deploy-code-deploy-groupHTTP: cache-listenerHTTP-arn cache-deploy-role-arn
+	$(eval listener-arn := $(shell cat .cache/listenerHTTP-arn.txt))
+	$(eval deploy-role-arn := $(shell cat .cache/deploy-role-arn.txt))
+	cat aws/cloud-formation/client-code-deploy-group.json | \
+		sed -e "s!<LISTENER_ARN>!$(listener-arn)!g" -e "s!<DEPLOY_ROLE_ARN>!$(deploy-role-arn)!g" \
+		> .cache/client-code-deploy-group.json
+	aws --profile $(profile) deploy create-deployment-group \
+		--cli-input-json file://.cache/client-code-deploy-group.json
 
 deploy-code-pipeline:
 	aws --profile $(profile) cloudformation deploy \
@@ -136,12 +152,19 @@ cache-region:
 	if [ ! -s .cache/region.txt ]; then aws configure get region > .cache/region.txt; fi
 	if [ ! -s .cache/region.txt ]; then echo $(region) > .cache/region.txt; fi
 
-cache-listener-arn:
+cache-listenerAPI-arn:
+	mkdir -p .cache
+	aws --profile=$(profile) cloudformation describe-stack-resource \
+		--stack-name=$(stack-family)-$(StackFamilyEnvironment)-load-balancer \
+		--logical-resource-id=ListenerAPI \
+		--query 'StackResourceDetail.PhysicalResourceId' | tr -d '"' > .cache/listenerAPI-arn.txt
+
+cache-listenerHTTP-arn:
 	mkdir -p .cache
 	aws --profile=$(profile) cloudformation describe-stack-resource \
 		--stack-name=$(stack-family)-$(StackFamilyEnvironment)-load-balancer \
 		--logical-resource-id=ListenerHTTP \
-		--query 'StackResourceDetail.PhysicalResourceId' | tr -d '"' > .cache/listener-arn.txt
+		--query 'StackResourceDetail.PhysicalResourceId' | tr -d '"' > .cache/listenerHTTP-arn.txt
 
 cache-deploy-role-name:
 	aws --profile=$(profile) cloudformation describe-stack-resource \

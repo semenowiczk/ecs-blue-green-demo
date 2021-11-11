@@ -27,10 +27,16 @@ Transform:
   - 'AWS::CodeDeployBlueGreen'
 
 Resources:
-  LogGroup:
+  LogGroupAPI:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "${StackFamily}-app"
+      LogGroupName: !Sub "${StackFamily}-api"
+      RetentionInDays: 14
+
+  LogGroupClient:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "${StackFamily}-client"
       RetentionInDays: 14
 
   ExecutionRole:
@@ -87,10 +93,10 @@ Resources:
       Path: "/"
       RoleName: !Sub "${StackFamily}-test-ecs-task"
 
-  TaskDefinition:
+  TaskDefinitionAPI:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Sub "${StackFamily}-app"
+      Family: !Sub "${StackFamily}-api"
       Memory: !Ref TaskMemory
       ExecutionRoleArn: !Ref ExecutionRole
       TaskRoleArn: !Ref TaskRole
@@ -107,7 +113,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub "${StackFamily}-app"
+              awslogs-group: !Sub "${StackFamily}-api"
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
           PortMappings:
@@ -214,12 +220,28 @@ Resources:
             - SourceVolume: uds
               ContainerPath: /var/run
           Memory: !Ref ApiMemory
+
+  TaskDefinitionClient:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${StackFamily}-client"
+      Memory: !Ref TaskMemory
+      ExecutionRoleArn: !Ref ExecutionRole
+      TaskRoleArn: !Ref TaskRole
+      NetworkMode: awsvpc
+      Volumes:
+        - Host: {}
+          Name: uds
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: !Ref EcsCpu
+      ContainerDefinitions:
         - Name: sharetheboard-client
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${StackFamily}/sharetheboard-client:latest
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub "${StackFamily}-app"
+              awslogs-group: !Sub "${StackFamily}-client"
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
           PortMappings:
@@ -242,9 +264,6 @@ Resources:
             Command:
               - CMD-SHELL
               - curl -f http://localhost/healthcheck
-          DependsOn:
-            - ContainerName: sharetheboard-api
-              Condition: HEALTHY
           Ulimits:
             - Name: nofile
               SoftLimit: 65536
@@ -254,33 +273,71 @@ Resources:
               ContainerPath: /var/run
           Memory: !Ref ClientMemory
 
-  # DiscoveryService:
-  #   Type: AWS::ServiceDiscovery::Service
-  #   Properties:
-  #     DnsConfig:
-  #       RoutingPolicy: MULTIVALUE
-  #       DnsRecords:
-  #         - TTL: 60
-  #           Type: A
-  #         - TTL: 60
-  #           Type: SRV
-  #     HealthCheckCustomConfig:
-  #       FailureThreshold: 1
-  #     Name: !Sub "${StackFamily}-${StackFamilyEnvironment}"
-  #     NamespaceId:
-  #       Fn::ImportValue:
-  #         !Sub "${StackFamily}-PrivateNamespace"
-  EcsService:
+
+  DiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      DnsConfig:
+        RoutingPolicy: MULTIVALUE
+        DnsRecords:
+          - TTL: 60
+            Type: A
+          - TTL: 60
+            Type: SRV
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: !Sub "${StackFamily}-${StackFamilyEnvironment}"
+      NamespaceId:
+        Fn::ImportValue:
+          !Sub "${StackFamily}-PrivateNamespace"
+
+  EcsServiceAPI:
     Type: AWS::ECS::Service
     Properties:
       Cluster:
         Fn::ImportValue:
           !Sub "${StackFamily}-ecs-cluster"
       LaunchType: FARGATE
-      TaskDefinition: !Ref TaskDefinition
-      # ServiceRegistries:
-      #   - RegistryArn: !GetAtt DiscoveryService.Arn
-      #     Port: 80
+      TaskDefinition: !Ref TaskDefinitionAPI
+      ServiceRegistries:
+        - RegistryArn: !GetAtt DiscoveryService.Arn
+          Port: 8000
+      DesiredCount: !Ref EcsDesiredCount
+      EnableExecuteCommand: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - Fn::ImportValue:
+                !Sub "${StackFamily}-private-subnet-1a"
+            - Fn::ImportValue:
+                !Sub "${StackFamily}-private-subnet-1b"
+          SecurityGroups:
+            - Fn::ImportValue:
+                !Sub "${StackFamily}-app-sg"
+      LoadBalancers:
+        - ContainerName: sharetheboard-api
+          ContainerPort: 8000
+          TargetGroupArn:
+            Fn::ImportValue:
+              !Sub "${StackFamily}-target-group-blue-api"
+      HealthCheckGracePeriodSeconds: 30
+      ServiceName: !Sub "${StackFamily}-api"
+      DeploymentController:
+        Type: CODE_DEPLOY
+      SchedulingStrategy: "REPLICA"
+
+  EcsServiceClient:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue:
+          !Sub "${StackFamily}-ecs-cluster"
+      LaunchType: FARGATE
+      TaskDefinition: !Ref TaskDefinitionClient
+      ServiceRegistries:
+        - RegistryArn: !GetAtt DiscoveryService.Arn
+          Port: 80
       DesiredCount: !Ref EcsDesiredCount
       EnableExecuteCommand: true
       NetworkConfiguration:
@@ -300,13 +357,8 @@ Resources:
           TargetGroupArn:
             Fn::ImportValue:
               !Sub "${StackFamily}-target-group-blue"
-        # - ContainerName: sharetheboard-api
-        #   ContainerPort: 8000
-        #   TargetGroupArn:
-        #     Fn::ImportValue:
-        #       !Sub "${StackFamily}-target-group-blue-api"
       HealthCheckGracePeriodSeconds: 30
-      ServiceName: !Sub "${StackFamily}-app"
+      ServiceName: !Sub "${StackFamily}-client"
       DeploymentController:
         Type: CODE_DEPLOY
       SchedulingStrategy: "REPLICA"

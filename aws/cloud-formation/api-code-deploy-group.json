@@ -1,5 +1,5 @@
 {
-  "applicationName": "ecs-board-test-app",
+  "applicationName": "ecs-board-api",
   "autoRollbackConfiguration": {
     "enabled": true,
     "events": [ "DEPLOYMENT_FAILURE" ]
@@ -24,10 +24,10 @@
       {
         "targetGroups": [
           {
-            "name": "ecs-board-tg-blue"
+            "name": "ecs-board-tg-blue-api"
           },
           {
-            "name": "ecs-board-tg-green"
+            "name": "ecs-board-tg-green-api"
           }
         ],
         "prodTrafficRoute": {
@@ -41,7 +41,7 @@
   "serviceRoleArn": "<DEPLOY_ROLE_ARN>",
   "ecsServices": [
     {
-      "serviceName": "ecs-board-app",
+      "serviceName": "ecs-board-api",
       "clusterName": "ecs-board"
     }
   ]

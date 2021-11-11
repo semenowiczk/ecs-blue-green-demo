@@ -222,7 +222,7 @@ Resources:
               OutputArtifacts:
                 - Name: BuildArtifact
               Region: eu-central-1
-        - Name: Deploy
+        - Name: DeployAPI
           Actions:
             - Name: Deploy
               InputArtifacts:
@@ -233,12 +233,29 @@ Resources:
                 Version: '1'
                 Provider: CodeDeployToECS
               Configuration:
-                ApplicationName: !Sub "${StackFamily}-test-app"
+                ApplicationName: !Sub "${StackFamily}-api"
                 DeploymentGroupName: !Sub "${StackFamily}-dg"
                 TaskDefinitionTemplateArtifact: BuildArtifact
-                TaskDefinitionTemplatePath: taskdef.json
+                TaskDefinitionTemplatePath: apitaskdef.json 
                 AppSpecTemplateArtifact: BuildArtifact
-                AppSpecTemplatePath: appspec.yml
+                AppSpecTemplatePath: appspecAPI.yml
+        - Name: DeployCient
+          Actions:
+            - Name: Deploy
+              InputArtifacts:
+                - Name: BuildArtifact
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: '1'
+                Provider: CodeDeployToECS
+              Configuration:
+                ApplicationName: !Sub "${StackFamily}-client"
+                DeploymentGroupName: !Sub "${StackFamily}-dg"
+                TaskDefinitionTemplateArtifact: BuildArtifact
+                TaskDefinitionTemplatePath: clienttaskdef.json
+                AppSpecTemplateArtifact: BuildArtifact
+                AppSpecTemplatePath: appspecClient.yml
       ArtifactStore:
         Type: S3
         Location: !Ref PilelineArtifactStore

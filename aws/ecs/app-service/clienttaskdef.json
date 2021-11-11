@@ -1,0 +1,99 @@
+{
+  "family": "ecs-board-client",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "2048",
+  "networkMode": "awsvpc",
+  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecs-board-ecs-execution",
+  "taskRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecs-board-ecs-task",
+  "volumes": [
+    {
+      "name": "uds",
+      "host": {}
+    }
+  ],
+  "containerDefinitions": [
+    {
+      "dnsSearchDomains": [],
+      "environmentFiles": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "secretOptions": [],
+        "options": {
+          "awslogs-group": "ecs-board-client",
+          "awslogs-region": "<AWS_REGION>",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": [],
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "protocol": "tcp",
+          "containerPort": 80
+        }
+      ],
+      "command": [],
+      "cpu": 0,
+      "environment": [],
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 65536,
+          "hardLimit": 65536
+        }
+      ],
+      "dnsServers": [],
+      "mountPoints": [
+        {
+          "containerPath": "/var/run",
+          "sourceVolume": "uds"
+        }
+      ],
+      "secrets": [
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/VITE_SOCKET_URL",
+          "name": "VITE_SOCKET_URL"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/VITE_ENABLE_XSTATE_INSPECTOR",
+          "name": "VITE_ENABLE_XSTATE_INSPECTOR"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/VITE_DASHBOARD_URL",
+          "name": "VITE_DASHBOARD_URL"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/VITE_STB_ENVIRONMENT",
+          "name": "VITE_STB_ENVIRONMENT"
+        }
+      ],
+      "dockerSecurityOptions": [],
+      "memory": 1536,
+      "volumesFrom": [],
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/sharetheboard-client:latest",
+      "dependsOn": [
+        {
+          "containerName": "sharetheboard-api",
+          "condition": "HEALTHY"
+        }
+      ],
+      "healthCheck": {
+        "retries": 3,
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost/healthcheck"
+        ],
+        "timeout": 30,
+        "interval": 30
+      },
+      "links": [],
+      "extraHosts": [],
+      "dockerLabels": {},
+      "systemControls": [],
+      "name": "sharetheboard-client"
+    }
+  ]
+}

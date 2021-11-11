@@ -224,9 +224,9 @@ Resources:
                 - Name: BuildArtifact
               Region: eu-central-1
               RunOrder: 2
-        - Name: DeployAPI
+        - Name: Deploy
           Actions:
-            - Name: Deploy
+            - Name: DeployAPI
               InputArtifacts:
                 - Name: BuildArtifact
               ActionTypeId:
@@ -242,7 +242,7 @@ Resources:
                 AppSpecTemplateArtifact: BuildArtifact
                 AppSpecTemplatePath: appspecAPI.yml
               RunOrder: 3
-            - Name: Deploy
+            - Name: DeployClient
               InputArtifacts:
                 - Name: BuildArtifact
               ActionTypeId:
@@ -257,7 +257,7 @@ Resources:
                 TaskDefinitionTemplatePath: clienttaskdef.json
                 AppSpecTemplateArtifact: BuildArtifact
                 AppSpecTemplatePath: appspecClient.yml
-              RunOrder: 4
+              RunOrder: 3
 
       ArtifactStore:
         Type: S3

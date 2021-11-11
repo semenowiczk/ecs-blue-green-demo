@@ -274,7 +274,7 @@ Resources:
           Memory: !Ref ClientMemory
 
 
-  DiscoveryService:
+  DiscoveryServiceAPI:
     Type: AWS::ServiceDiscovery::Service
     Properties:
       DnsConfig:
@@ -286,7 +286,7 @@ Resources:
             Type: SRV
       HealthCheckCustomConfig:
         FailureThreshold: 1
-      Name: !Sub "${StackFamily}-${StackFamilyEnvironment}"
+      Name: "api"
       NamespaceId:
         Fn::ImportValue:
           !Sub "${StackFamily}-PrivateNamespace"
@@ -300,7 +300,7 @@ Resources:
       LaunchType: FARGATE
       TaskDefinition: !Ref TaskDefinitionAPI
       ServiceRegistries:
-        - RegistryArn: !GetAtt DiscoveryService.Arn
+        - RegistryArn: !GetAtt DiscoveryServiceAPI.Arn
           Port: 8000
       DesiredCount: !Ref EcsDesiredCount
       EnableExecuteCommand: true
@@ -327,6 +327,23 @@ Resources:
         Type: CODE_DEPLOY
       SchedulingStrategy: "REPLICA"
 
+  DiscoveryServiceClient:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      DnsConfig:
+        RoutingPolicy: MULTIVALUE
+        DnsRecords:
+          - TTL: 60
+            Type: A
+          - TTL: 60
+            Type: SRV
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: "client"
+      NamespaceId:
+        Fn::ImportValue:
+          !Sub "${StackFamily}-PrivateNamespace"
+
   EcsServiceClient:
     Type: AWS::ECS::Service
     Properties:
@@ -336,7 +353,7 @@ Resources:
       LaunchType: FARGATE
       TaskDefinition: !Ref TaskDefinitionClient
       ServiceRegistries:
-        - RegistryArn: !GetAtt DiscoveryService.Arn
+        - RegistryArn: !GetAtt DiscoveryServiceClient.Arn
           Port: 80
       DesiredCount: !Ref EcsDesiredCount
       EnableExecuteCommand: true

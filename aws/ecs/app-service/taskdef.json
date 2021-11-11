@@ -16,39 +16,6 @@
   ],
   "containerDefinitions": [
     {
-      "name": "nginx",
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/nginx:<IMAGE_TAG>",
-      "essential": true,
-      "portMappings": [
-        {
-          "protocol": "tcp",
-          "containerPort": 80
-        }
-      ],
-      "ulimits": [
-        {
-          "name": "nofile",
-          "softLimit": 65536,
-          "hardLimit": 65536
-        }
-      ],
-      "memory": 1024,
-      "mountPoints": [
-        {
-          "sourceVolume": "uds",
-          "containerPath": "/var/run"
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "ecs-board-app",
-          "awslogs-region": "<AWS_REGION>",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
-    },
-    {
       "dnsSearchDomains": [],
       "environmentFiles": [],
       "logConfiguration": {
@@ -273,6 +240,91 @@
       "dockerLabels": {},
       "systemControls": [],
       "name": "sharetheboard-api"
+    },
+    {
+      "dnsSearchDomains": [],
+      "environmentFiles": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "secretOptions": [],
+        "options": {
+          "awslogs-group": "ecs-board-staging",
+          "awslogs-region": "<AWS_REGION>",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": [],
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "protocol": "tcp",
+          "containerPort": 80
+        },
+        {
+          "hostPort": 443,
+          "protocol": "tcp",
+          "containerPort": 443
+        }
+      ],
+      "command": [],
+      "cpu": 0,
+      "environment": [],
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 65536,
+          "hardLimit": 65536
+        }
+      ],
+      "dnsServers": [],
+      "mountPoints": [
+        {
+          "containerPath": "/var/run",
+          "sourceVolume": "uds"
+        }
+      ],
+      "secrets": [
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/VITE_SOCKET_URL",
+          "name": "VITE_SOCKET_URL"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/VITE_ENABLE_XSTATE_INSPECTOR",
+          "name": "VITE_ENABLE_XSTATE_INSPECTOR"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/VITE_DASHBOARD_URL",
+          "name": "VITE_DASHBOARD_URL"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:<AWS_REGION>:<AWS_ACCOUNT_ID>:parameter/env/staging/VITE_STB_ENVIRONMENT",
+          "name": "VITE_STB_ENVIRONMENT"
+        }
+      ],
+      "dockerSecurityOptions": [],
+      "memory": 1536,
+      "volumesFrom": [],
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/ecs-board/sharetheboard-client:<IMAGE_TAG>",
+      "dependsOn": [
+        {
+          "containerName": "sharetheboard-api",
+          "condition": "HEALTHY"
+        }
+      ],
+      "healthCheck": {
+        "retries": 3,
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost/healthcheck"
+        ],
+        "timeout": 30,
+        "interval": 30
+      },
+      "links": [],
+      "extraHosts": [],
+      "dockerLabels": {},
+      "systemControls": [],
+      "name": "sharetheboard-client"
     },
     {
       "name": "php-fpm",

@@ -4,6 +4,9 @@ Parameters:
   StackFamily:
     Type: String
     Default: ecs-blue-green-board
+  StackFamilyEnvironment:
+    Type: String
+    Default: test
   EcsDesiredCount:
     Type: Number
     Default: 1
@@ -13,10 +16,10 @@ Parameters:
   TaskMemory:
     Type: Number
     Default: 2048
-  NginxMemory:
+  ApiMemory:
     Type: Number
-    Default: 512
-  PhpFpmMemory:
+    Default: 1536
+  ClientMemory:
     Type: Number
     Default: 1536
 
@@ -45,6 +48,7 @@ Resources:
       Path: "/"
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
       RoleName: !Sub "${StackFamily}-test-ecs-execution"
 
   TaskRole:
@@ -59,6 +63,27 @@ Resources:
                 - "ecs-tasks.amazonaws.com"
             Action:
               - "sts:AssumeRole"
+      Policies:
+        - PolicyName: 'ExecuteCommandPermissions'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: [
+                  "ssmmessages:CreateControlChannel",
+                  "ssmmessages:OpenControlChannel",
+                  "ssmmessages:CreateDataChannel",
+                  "ssmmessages:OpenDataChannel"
+                ]
+                Resource: "*"
+              - Effect: 'Allow'
+                Action: [
+                  "logs:CreateLogStream",
+                  "logs:DescribeLogGroups",
+                  "logs:DescribeLogStreams",
+                  "logs:PutLogEvents"
+                ]
+                Resource: "*"
       Path: "/"
       RoleName: !Sub "${StackFamily}-test-ecs-task"
 
@@ -77,8 +102,120 @@ Resources:
         - FARGATE
       Cpu: !Ref EcsCpu
       ContainerDefinitions:
-        - Name: nginx
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${StackFamily}/nginx:latest
+        - Name: sharetheboard-api
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${StackFamily}/sharetheboard-api:latest
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub "${StackFamily}-app"
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - ContainerPort: 8000
+              HostPort: 8000
+              Protocol: tcp
+          Secrets:
+            - Name: NODE_ENV
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/NODE_ENV
+            - Name: APP_PORT
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_PORT
+            - Name: APP_HOST
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_HOST
+            - Name: APP_LOGGER_LEVEL
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_LOGGER_LEVEL
+            - Name: APP_URL
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_URL
+            - Name: APP_DATABASE_SECRET_URL
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_DATABASE_SECRET_URL
+            - Name: APP_DATABASE_LOGGER_LEVEL
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_DATABASE_LOGGER_LEVEL
+            - Name: APP_SESSION_DOMAIN
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SESSION_DOMAIN
+            - Name: APP_SESSION_SECRET
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SESSION_SECRET
+            - Name: APP_DATABASE_MIGRATIONS_AUTORUN
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_DATABASE_MIGRATIONS_AUTORUN
+            - Name: APP_SESSION_TIMEOUT
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SESSION_TIMEOUT
+            - Name: APP_SESSION_REFRESH_SECRET
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SESSION_REFRESH_SECRET
+            - Name: APP_SESSION_REFRESH_TIMEOUT
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SESSION_REFRESH_TIMEOUT
+            - Name: APP_WHITELIST_DOMAINS
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_WHITELIST_DOMAINS
+            - Name: APP_FACEBOOK_APP_ID
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_FACEBOOK_APP_ID
+            - Name: APP_FACEBOOK_APP_SECRET
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_FACEBOOK_APP_SECRET
+            - Name: APP_GOOGLE_CLIENT_ID
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_GOOGLE_CLIENT_ID
+            - Name: APP_GOOGLE_SECRET
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_GOOGLE_SECRET
+            - Name: APP_SMTP_MAIL_SENDER
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SMTP_MAIL_SENDER
+            - Name: APP_SMTP_API_HOST
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SMTP_API_HOST
+            - Name: APP_SMTP_API_PORT
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SMTP_API_PORT
+            - Name: APP_SMTP_API_CLIENT
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SMTP_API_CLIENT
+            - Name: APP_SMTP_API_SECRET
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SMTP_API_SECRET
+            - Name: APP_RABBITMQ_URI
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_RABBITMQ_URI
+            - Name: APP_CLIENT_PLAN_ACCESS_KEY_ID
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_CLIENT_PLAN_ACCESS_KEY_ID
+            - Name: APP_CLIENT_PLAN_SECRET_ACCESS_KEY_ID
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_CLIENT_PLAN_SECRET_ACCESS_KEY_ID
+            - Name: APP_SESSION_PASSWORD_RESET_SECRET
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SESSION_PASSWORD_RESET_SECRET
+            - Name: APP_SESSION_PASSWORD_RESTET_TIMEOUT
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SESSION_PASSWORD_RESTET_TIMEOUT
+            - Name: APP_SESSION_VERIFICATION_SECRET
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SESSION_VERIFICATION_SECRET
+            - Name: APP_SESSION_VERIFICATION_TIMEOUT
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_SESSION_VERIFICATION_TIMEOUT
+            - Name: APP_FEATURE_FLAG_JWT_WS_GUARD
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_FEATURE_FLAG_JWT_WS_GUARD
+            - Name: APP_REDIS_URL
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_REDIS_URL
+            - Name: APP_HASHIDS_SALT
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_HASHIDS_SALT
+            - Name: APP_HASHIDS_MIN_LENGTH
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_HASHIDS_MIN_LENGTH
+            - Name: APP_WS_SESSION_SECRET
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_WS_SESSION_SECRET
+            - Name: APP_WS_SESSION_SAVE_UNINITIALIZED
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_WS_SESSION_SAVE_UNINITIALIZED
+            - Name: APP_WS_SESSION_RESAVE
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_WS_SESSION_RESAVE
+            - Name: APP_WS_SESSION_COOKIE_SECURE
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_WS_SESSION_COOKIE_SECURE
+            - Name: APP_WS_SESSION_COOKIE_HTTP_ONLY
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_WS_SESSION_COOKIE_HTTP_ONLY
+            - Name: APP_WS_SESSION_COOKIE_SAME_SITE
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_WS_SESSION_COOKIE_SAME_SITE
+            - Name: APP_WS_SESSION_COOKIE_MAX_AGE
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_WS_SESSION_COOKIE_MAX_AGE
+            - Name: APP_WS_SESSION_COOKIE_DOMAIN
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/APP_WS_SESSION_COOKIE_DOMAIN
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - curl -f http://localhost:8000/api/healthcheck
+            Interval: 30
+            Retries: 3
+            Timeout: 30
+          Ulimits:
+            - Name: nofile
+              SoftLimit: 65536
+              HardLimit: 65536
+          MountPoints:
+            - SourceVolume: uds
+              ContainerPath: /var/run
+          Memory: !Ref ApiMemory
+        - Name: sharetheboard-client
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${StackFamily}/sharetheboard-client:latest
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -89,6 +226,25 @@ Resources:
             - ContainerPort: 80
               HostPort: 80
               Protocol: tcp
+            - ContainerPort: 443
+              HostPort: 443
+              Protocol: tcp
+          Secrets:
+            - Name: VITE_SOCKET_URL
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/VITE_SOCKET_URL
+            - Name: VITE_ENABLE_XSTATE_INSPECTOR
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/VITE_ENABLE_XSTATE_INSPECTOR
+            - Name: VITE_DASHBOARD_URL
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/VITE_DASHBOARD_URL
+            - Name: VITE_STB_ENVIRONMENT
+              ValueFrom: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/env/staging/VITE_STB_ENVIRONMENT
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - curl -f http://localhost/healthcheck
+          DependsOn:
+            - ContainerName: sharetheboard-api
+              Condition: HEALTHY
           Ulimits:
             - Name: nofile
               SoftLimit: 65536
@@ -96,24 +252,24 @@ Resources:
           MountPoints:
             - SourceVolume: uds
               ContainerPath: /var/run
-          Memory: !Ref NginxMemory
-        - Name: php-fpm
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${StackFamily}/php-fpm:latest
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Sub "${StackFamily}-app"
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: ecs
-          Ulimits:
-            - Name: nofile
-              SoftLimit: 65536
-              HardLimit: 65536
-          MountPoints:
-            - SourceVolume: uds
-              ContainerPath: /var/run
-          Memory: !Ref PhpFpmMemory
+          Memory: !Ref ClientMemory
 
+  # DiscoveryService:
+  #   Type: AWS::ServiceDiscovery::Service
+  #   Properties:
+  #     DnsConfig:
+  #       RoutingPolicy: MULTIVALUE
+  #       DnsRecords:
+  #         - TTL: 60
+  #           Type: A
+  #         - TTL: 60
+  #           Type: SRV
+  #     HealthCheckCustomConfig:
+  #       FailureThreshold: 1
+  #     Name: !Sub "${StackFamily}-${StackFamilyEnvironment}"
+  #     NamespaceId:
+  #       Fn::ImportValue:
+  #         !Sub "${StackFamily}-PrivateNamespace"
   EcsService:
     Type: AWS::ECS::Service
     Properties:
@@ -122,7 +278,11 @@ Resources:
           !Sub "${StackFamily}-ecs-cluster"
       LaunchType: FARGATE
       TaskDefinition: !Ref TaskDefinition
+      # ServiceRegistries:
+      #   - RegistryArn: !GetAtt DiscoveryService.Arn
+      #     Port: 80
       DesiredCount: !Ref EcsDesiredCount
+      EnableExecuteCommand: true
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
@@ -135,11 +295,21 @@ Resources:
             - Fn::ImportValue:
                 !Sub "${StackFamily}-app-sg"
       LoadBalancers:
-        - ContainerName: nginx
+        - ContainerName: sharetheboard-client
           ContainerPort: 80
           TargetGroupArn:
             Fn::ImportValue:
               !Sub "${StackFamily}-target-group-blue"
+        # - ContainerName: sharetheboard-client
+        #   ContainerPort: 80
+        #   TargetGroupArn:
+        #     Fn::ImportValue:
+        #       !Sub "${StackFamily}-target-group-blue-app"
+        # - ContainerName: sharetheboard-api
+        #   ContainerPort: 8000
+        #   TargetGroupArn:
+        #     Fn::ImportValue:
+        #       !Sub "${StackFamily}-target-group-blue-api"
       HealthCheckGracePeriodSeconds: 30
       ServiceName: !Sub "${StackFamily}-app"
       DeploymentController:

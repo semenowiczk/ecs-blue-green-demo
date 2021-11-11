@@ -18,6 +18,18 @@ Resources:
       HealthCheckPath: /healthcheck
       Name: !Sub "${StackFamily}-tg-blue"
 
+  TargetGroupBlueAPI:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 8000
+      Protocol: HTTP
+      TargetType: ip
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${StackFamily}-vpc"
+      HealthCheckPath: /api/healthcheck
+      Name: !Sub "${StackFamily}-tg-blue-api"
+
   TargetGroupGreen:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -29,6 +41,18 @@ Resources:
           !Sub "${StackFamily}-vpc"
       HealthCheckPath: /healthcheck
       Name: !Sub "${StackFamily}-tg-green"
+
+  TargetGroupGreenAPI:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 8000
+      Protocol: HTTP
+      TargetType: ip
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${StackFamily}-vpc"
+      HealthCheckPath: /api/healthcheck
+      Name: !Sub "${StackFamily}-tg-green-api"
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -56,15 +80,36 @@ Resources:
       - TargetGroupBlue
       - LoadBalancer
 
+  ListenerAPI:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupBlueAPI
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 8000
+      Protocol: HTTP
+    DependsOn:
+      - TargetGroupBlueAPI
+      - LoadBalancer
+
 Outputs:
   TargetGroupBlue:
     Value: !Ref TargetGroupBlue
     Export:
       Name: !Sub "${StackFamily}-target-group-blue"
+  TargetGroupBlueAPI:
+    Value: !Ref TargetGroupBlueAPI
+    Export:
+      Name: !Sub "${StackFamily}-target-group-blue-api"
   TargetGroupGreen:
     Value: !Ref TargetGroupGreen
     Export:
       Name: !Sub "${StackFamily}-target-group-green"
+  TargetGroupGreenAPI:
+    Value: !Ref TargetGroupGreenAPI
+    Export:
+      Name: !Sub "${StackFamily}-target-group-green-api"
   LoadBalancer:
     Value: !GetAtt LoadBalancer.DNSName
     Export:
